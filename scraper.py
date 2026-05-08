@@ -1,6 +1,7 @@
 import re
 import json
 import sys
+import os
 from datetime import datetime
 
 import requests
@@ -138,7 +139,8 @@ def main() -> None:
         print("Error: Could not extract article content. Is this a valid Wikipedia article URL?")
         sys.exit(1)
 
-    filename = slugify(article["title"]) + ".json"
+    os.makedirs("results", exist_ok=True)
+    filename = os.path.join("results", slugify(article["title"]) + ".json")
     save_json(article, filename)
     print(f"Saved: {filename}")
 
