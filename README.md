@@ -30,7 +30,7 @@ This produces a file called `web_scraping.json` in the current directory.
   "summary": "Web scraping is the process of extracting data from websites...",
   "sections": [
     { "heading": "Techniques", "content": "..." },
-    { "heading": "Legal issues", "content": "..." }z
+    { "heading": "Legal issues", "content": "..." }
   ],
   "url": "https://en.wikipedia.org/wiki/Web_scraping",
   "scraped_at": "2026-05-08T14:32:00"
@@ -40,8 +40,8 @@ This produces a file called `web_scraping.json` in the current directory.
 | Field | Description |
 |---|---|
 | `title` | Article title |
-| `summary` | Introductory paragraphs before the table of contents |
-| `sections` | Each section heading paired with its paragraph text |
+| `summary` | Introductory paragraphs before the first section heading |
+| `sections` | Each section heading paired with its text content (paragraphs and lists). Boilerplate sections like References and See Also are excluded. Citation markers like `[1]` are stripped. |
 | `url` | The URL you passed in |
 | `scraped_at` | ISO 8601 timestamp of when the scrape ran |
 
@@ -94,19 +94,7 @@ title = title_tag.get_text(strip=True) if title_tag else ""
 
 #### Summary
 
-The summary is the introductory text before the table of contents. Wikipedia wraps its main content in `<div class="mw-parser-output">`. The function walks the **immediate children** of this div and collects `<p>` tags, stopping as soon as it hits `<div id="toc">`:
-
-```html
-<div class="mw-parser-output">
-  <p>First intro paragraph.</p>   ← collected
-  <p>Second intro paragraph.</p>  ← collected
-  <div id="toc">...</div>         ← STOP here
-  <h2>History</h2>
-  ...
-</div>
-```
-
-All collected paragraphs are joined with a space into a single `summary` string.
+The summary is the introductory text before the first section heading. The function searches for all `<p>` tags inside `<div class="mw-parser-output">`, stopping at the first `<h2>`. Paragraphs inside tables (infoboxes) are skipped. All collected paragraphs are joined with a space into a single `summary` string.
 
 #### Sections
 
@@ -123,7 +111,7 @@ This becomes:
 { "heading": "History", "content": "Python was conceived in the late 1980s. Guido van Rossum started the project..." }
 ```
 
-The function uses a simple accumulator pattern — it keeps track of the current heading and collects paragraphs until the next heading is found.
+The function uses a simple accumulator pattern — it keeps track of the current heading and collects paragraphs and list items (`<ul>`, `<ol>`) until the next heading is found.
 
 ---
 
